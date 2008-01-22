@@ -1,0 +1,28 @@
+AC_INIT(configure.in)
+
+VERSION=0.0.5
+PACKAGE=stripboard
+
+AM_CONFIG_HEADER(config.h)
+
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
+AC_SUBST(VERSION)
+
+AC_PROG_CC
+AM_PROG_CC_C_O
+
+AM_PATH_GLIB_2_0(2.4.0,,AC_MSG_ERROR([GLib >= 2.4.0 is required]))
+AM_PATH_GTK_2_0(2.4.0,,AC_MSG_ERROR([GTK+ >= 2.4.0 is required]))
+
+PKG_CHECK_MODULES(CAIRO, cairo >= 1.4.0 cairo-svg >= 1.4.0,,
+	AC_MSG_ERROR([Cairo/Cairo-SVG >= 1.4 is required]))
+
+PKG_CHECK_MODULES(RSVG, librsvg-2.0 >= 2.14,,
+	AC_MSG_ERROR([librsvg >= 2.14 is required]))
+
+AC_DEFINE_DIR(DATA_DIR, datadir/$PACKAGE, [Data directory])
+
+AC_OUTPUT(Makefile
+	m4/Makefile
+	src/Makefile
+)

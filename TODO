@@ -1,0 +1,6 @@
+* short-term (0.1.0)
+	* save/load support
+	* parts: to-92, to-220, cercap, wires, LED, elcap, resistor, quartz, dip
+	* strip cuts
+	* most properties
+

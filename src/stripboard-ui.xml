@@ -1,0 +1,17 @@
+<ui>
+	<menubar name="MainMenu">
+		<menu name="FileMenu" action="FileMenuAction">
+			<menuitem name="Quit" action="QuitAction" />
+		</menu>
+	</menubar>
+	<toolbar name="ToolsBar">
+		<toolitem action="ToolSelectAction" />
+		<toolitem action="ToolDeleteAction" />
+		<toolitem action="ToolSwapPolAction" />
+		<toolitem action="ToolAddWireAction" />
+		<toolitem action="ToolAddResAction" />
+		<toolitem action="ToolAddElCapAction" />
+		<toolitem action="ToolAddLEDAction" />
+		<toolitem action="ToolAddICSocketAction" />
+	</toolbar>
+</ui>
