@@ -10,7 +10,8 @@ typedef enum {
 	TOOL_ADD_RESISTOR,
 	TOOL_ADD_ELCAP,
 	TOOL_ADD_LED,
-	TOOL_ADD_ICSOCKET
+	TOOL_ADD_ICSOCKET,
+	TOOL_ADD_DIODE
 } ToolID;
 
 gboolean tools_select(ToolID id);
