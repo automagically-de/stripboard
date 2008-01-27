@@ -3,7 +3,8 @@ bin_PROGRAMS = stripboard
 stripboard_SOURCES = \
 	main.c main.h \
 	misc.c misc.h \
-	gui.c gui.h actions.h \
+	gui.c gui.h \
+	actions.c actions.h \
 	layers.c layers.h \
 	tools.c tools.h \
 	property.c property.h \

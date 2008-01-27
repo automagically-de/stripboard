@@ -3,16 +3,30 @@
 
 #include <gtk/gtk.h>
 
+void actions_New(void);
+
 /* GtkActionEntry:
  * name, stock id, label, accelerator, tooltip, callback */
 
 static GtkActionEntry action_entries[] =
 {
 	{ "FileMenuAction", NULL, "_File" },
+	{ "NewAction", GTK_STOCK_NEW,
+		"_New", "<control>N",
+		"New board",
+		G_CALLBACK(actions_New) },
+	{ "LoadAction", GTK_STOCK_OPEN,
+		"_Load", "<control>O",
+		"Load board layout",
+		NULL },
+	{ "SaveAction", GTK_STOCK_SAVE,
+		"_Save", "<control>S",
+		"Save board layout",
+		NULL },
 	{ "QuitAction", GTK_STOCK_QUIT,
 		"_Quit", "<control>Q",
 		"Quit",
-		G_CALLBACK(gtk_main_quit) }
+		G_CALLBACK(gtk_main_quit) },
 };
 
 static guint32 action_num_entries = G_N_ELEMENTS(action_entries);

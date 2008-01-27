@@ -1,9 +1,20 @@
 <ui>
 	<menubar name="MainMenu">
 		<menu name="FileMenu" action="FileMenuAction">
-			<menuitem name="Quit" action="QuitAction" />
+			<menuitem action="NewAction" />
+			<menuitem action="LoadAction" />
+			<menuitem action="SaveAction" />
+			<separator />
+			<menuitem action="QuitAction" />
 		</menu>
 	</menubar>
+	<toolbar name="MainToolbar">
+		<toolitem action="NewAction" />
+		<toolitem action="LoadAction" />
+		<toolitem action="SaveAction" />
+		<separator />
+		<toolitem action="QuitAction" />
+	</toolbar>
 	<toolbar name="ToolsBar">
 		<toolitem action="ToolSelectAction" />
 		<toolitem action="ToolDeleteAction" />

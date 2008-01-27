@@ -96,6 +96,10 @@ gboolean gui_init(int *argcp, char ***argvp)
 	gtk_window_add_accel_group(GTK_WINDOW(window),
 		gtk_ui_manager_get_accel_group(ui));
 
+	/** tool bar **/
+	tb =  gtk_ui_manager_get_widget(ui, "/MainToolbar");
+	gtk_box_pack_start(GTK_BOX(vbox), tb, FALSE, FALSE, 0);
+
 	/* main view */
 
 	hpaned = gtk_hpaned_new();
