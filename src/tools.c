@@ -28,14 +28,14 @@ gboolean tools_click(gint32 x, gint32 y, gint32 hx, gint32 hy)
 			{
 				gui_set_selection(layers_render_custom(o, LAYER_SELECT));
 				if(o->type->properties)
-					gui_set_properties_widget(o->type->properties(o->data));
+					gui_set_properties_widget(o->type->properties(o));
 			}
 			else
 			{
 				gui_set_selection(NULL);
 				o = object_get_board();
 				if(o != NULL)
-					gui_set_properties_widget(o->type->properties(o->data));
+					gui_set_properties_widget(o->type->properties(o));
 			}
 			break;
 		case TOOL_DELETE:

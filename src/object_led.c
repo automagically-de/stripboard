@@ -4,7 +4,7 @@
 #include "object_led.h"
 #include "misc.h"
 
-gboolean object_led_draw(cairo_t *cairo, LayerID layerid, gpointer object);
+gboolean object_led_draw(cairo_t *cairo, LayerID layerid, Object *o);
 
 ObjectType object_led = {
 	"LED",
@@ -21,25 +21,20 @@ Object *object_led_new(guint32 x1, guint32 y1, guint32 x2, guint32 y2,
 	ObjectLED *led;
 
 	led = g_new0(ObjectLED, 1);
-	led->x1 = x1;
-	led->x2 = x2;
-	led->y1 = y1;
-	led->y2 = y2;
 	led->color = color;
 
-	return object_create(&object_led, led);
+	return object_create(&object_led, led, x1, y1, x2, y2);
 }
 
-gboolean object_led_draw(cairo_t *cairo, LayerID layerid, gpointer object)
+gboolean object_led_draw(cairo_t *cairo, LayerID layerid, Object *o)
 {
-    ObjectLED *led = (ObjectLED *)object;
 	cairo_pattern_t *pat;
 	gdouble cx, cy, angle, delta;
 
-	cx = MIN(led->x1, led->x2) + ABS((gdouble)(led->x2 - led->x1) / 2.0);
-	cy = MIN(led->y1, led->y2) + ABS((gdouble)(led->y2 - led->y1) / 2.0);
-	angle = misc_angle(led->x1, led->y1, led->x2, led->y2);
-	delta = misc_delta(led->x1, led->y1, led->x2, led->y2);
+	cx = MIN(o->x1, o->x2) + ABS((gdouble)(o->x2 - o->x1) / 2.0);
+	cy = MIN(o->y1, o->y2) + ABS((gdouble)(o->y2 - o->y1) / 2.0);
+	angle = misc_angle(o->x1, o->y1, o->x2, o->y2);
+	delta = misc_delta(o->x1, o->y1, o->x2, o->y2);
 
 	cairo_translate(cairo, HOLE_TO_POINT(cx), HOLE_TO_POINT(cy));
 	cairo_rotate(cairo, angle);

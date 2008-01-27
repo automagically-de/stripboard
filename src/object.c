@@ -26,18 +26,24 @@ gboolean object_render(cairo_t *cairo, LayerID layerid, Object *object)
 		return FALSE;
 
 	if(otype->render)
-		return otype->render(cairo, layerid, object->data);
+		return otype->render(cairo, layerid, object);
 
 	return TRUE;
 }
 
-Object *object_create(ObjectType *type, gpointer data)
+Object *object_create(ObjectType *type, gpointer data,
+	gint32 x1, gint32 y1, gint32 x2, gint32 y2)
 {
 	Object *object;
 
 	object = g_new0(Object, 1);
 	object->type = type;
 	object->data = data;
+
+	object->x1 = x1;
+	object->y1 = y1;
+	object->x2 = x2;
+	object->y2 = y2;
 
 	return object;
 }
@@ -100,15 +106,14 @@ void object_delete(Object *object)
 
 gboolean object_swap_polarity(Object *object)
 {
-	ObjectGeneric2P *gen_o = (ObjectGeneric2P *)object->data;
 	gint32 s1, s2;
 
-	s1 = gen_o->x1;
-	s2 = gen_o->y1;
-	gen_o->x1 = gen_o->x2;
-	gen_o->y1 = gen_o->y2;
-	gen_o->x2 = s1;
-	gen_o->y2 = s2;
+	s1 = object->x1;
+	s2 = object->y1;
+	object->x1 = object->x2;
+	object->y1 = object->y2;
+	object->x2 = s1;
+	object->y2 = s2;
 
 	layers_update(objects);
 	gui_redraw();
@@ -147,7 +152,7 @@ Object *object_select(gdouble x, gdouble y, gint32 hx, gint32 hy)
 	for(item = objects; item != NULL; item = item->next)
 	{
 		Object *o = (Object *)item->data;
-		if(o->type->select && o->type->select(o->data, x, y, hx, hy))
+		if(o->type->select && o->type->select(o, x, y, hx, hy))
 		{
 			add_to_selection(o);
 			return o;
@@ -171,13 +176,10 @@ Object *object_get_board(void)
 		return NULL;
 }
 
-gboolean object_select_line(gpointer data, gdouble x, gdouble y,
+gboolean object_select_line(Object *o, gdouble x, gdouble y,
 	gint32 hx, gint32 hy)
 {
-	ObjectGeneric2P *o;
 	gdouble ax, ay, bx, by;
-
-	o = (ObjectGeneric2P *)data;
 
 	if(o->x1 < o->x2)
 	{

@@ -7,39 +7,41 @@
 #include <gtk/gtk.h>
 #include <cairo/cairo.h>
 
+typedef struct _ObjectType ObjectType;
+typedef struct _Object Object;
+
 typedef gpointer (*ObjectTypeInitFunc)(void);
 typedef void (*ObjectTypeCleanupFunc)(gpointer data);
 typedef gboolean (*ObjectRenderFunc)(cairo_t *cairo, LayerID layerid,
-	gpointer data);
-typedef gboolean (*ObjectSelectFunc)(gpointer data, gdouble x, gdouble y,
-	gint32 hx, gint32 hy);
-typedef GtkWidget *(*ObjectPropertiesFunc)(gpointer data);
+	Object *o);
+typedef gboolean (*ObjectSelectFunc)(Object *o,
+	gdouble x, gdouble y, gint32 hx, gint32 hy);
+typedef GtkWidget *(*ObjectPropertiesFunc)(Object *o);
 
-typedef struct {
+struct _ObjectType {
 	const gchar *title;
 	ObjectTypeInitFunc init;
 	ObjectTypeCleanupFunc cleanup;
 	ObjectRenderFunc render;
 	ObjectSelectFunc select;
 	ObjectPropertiesFunc properties;
-} ObjectType;
+};
 
-typedef struct {
+struct _Object {
 	ObjectType *type;
-	gpointer data;
-} Object;
-
-typedef struct {
 	gint32 x1;
 	gint32 y1;
 	gint32 x2;
 	gint32 y2;
-} ObjectGeneric2P;
+	gpointer properties;
+	gpointer data;
+};
 
 gboolean object_init(void);
 void object_cleanup(void);
 
-Object *object_create(ObjectType *type, gpointer data);
+Object *object_create(ObjectType *type, gpointer data,
+	gint32 x1, gint32 y1, gint32 x2, gint32 y2);
 gboolean object_add(Object *object);
 gboolean object_remove_full(Object *object, gboolean delete);
 gboolean object_remove(Object *object);
@@ -53,7 +55,7 @@ Object *object_get_selected(void);
 Object *object_get_board(void);
 
 /* generic object callbacks */
-gboolean object_select_line(gpointer data, gdouble x, gdouble y,
+gboolean object_select_line(Object *o, gdouble x, gdouble y,
 	gint32 hx, gint32 hy);
 
 #include "object_board.h"

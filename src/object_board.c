@@ -4,8 +4,8 @@
 #include "object_board.h"
 #include "property.h"
 
-gboolean object_board_draw(cairo_t *cairo, LayerID layerid, gpointer object);
-GtkWidget *object_board_properties(gpointer data);
+gboolean object_board_draw(cairo_t *cairo, LayerID layerid, Object *o);
+GtkWidget *object_board_properties(Object *o);
 
 ObjectType object_board = {
 	"board",
@@ -24,24 +24,23 @@ Object *object_board_new(guint32 holes_x, guint32 holes_y)
 	oboard->holes_x = holes_x;
 	oboard->holes_y = holes_y;
 
-	return object_create(&object_board, oboard);
+	return object_create(&object_board, oboard, 0, 0, holes_x, holes_y);
 }
 
-gboolean object_board_draw(cairo_t *cairo, LayerID layerid, gpointer object)
+gboolean object_board_draw(cairo_t *cairo, LayerID layerid, Object *o)
 {
-	ObjectBoard *oboard = (ObjectBoard *)object;
 	gint x, y;
 
 	switch(layerid)
 	{
 		case LAYER_STRIPS:
-			for(y = 0; y < oboard->holes_y; y ++)
+			for(y = 0; y < o->y2; y ++)
 			{
 				cairo_set_source_rgba(cairo, 1.0, 0.6, 0.1, 1.0);
 				cairo_rectangle(cairo,
 					AREA_TO_POINT(0) + 10.0,
 					AREA_TO_POINT(y) + 10.0,
-					HOLES_TO_POINT(oboard->holes_x) - 20.0,
+					HOLES_TO_POINT(o->x2) - 20.0,
 					HOLES_TO_POINT(1)- 20.0);
 				cairo_fill(cairo);
 			}
@@ -53,13 +52,13 @@ gboolean object_board_draw(cairo_t *cairo, LayerID layerid, gpointer object)
 			cairo_rectangle(cairo,
 				AREA_TO_POINT(0),
 				AREA_TO_POINT(0),
-				HOLES_TO_POINT(oboard->holes_x),
-				HOLES_TO_POINT(oboard->holes_y));
+				HOLES_TO_POINT(o->x2),
+				HOLES_TO_POINT(o->y2));
 			cairo_fill(cairo);
 
 			cairo_set_source_rgba(cairo, 0.9, 0.9, 0.9, 1.0);
-			for(y = 0; y < oboard->holes_y; y ++)
-				for(x = 0; x < oboard->holes_x; x ++)
+			for(y = 0; y < o->y2; y ++)
+				for(x = 0; x < o->x2; x ++)
 				{
 					cairo_arc(cairo, HOLE_TO_POINT(x), HOLE_TO_POINT(y),
 						15.0, 0, G_PI * 2);
@@ -75,7 +74,7 @@ gboolean object_board_draw(cairo_t *cairo, LayerID layerid, gpointer object)
 }
 
 struct BoardUpdateContainer {
-	guint32 *var;
+	gint32 *var;
 	guint32 *global_var;
 };
 
@@ -88,11 +87,10 @@ static void board_spin_changed_cb(GtkSpinButton *spinbutton, gpointer data)
 	object_redraw(NULL);
 }
 
-GtkWidget *object_board_properties(gpointer data)
+GtkWidget *object_board_properties(Object *o)
 {
 	static PropertyPrivate *p_w, *p_h;
 	static GtkWidget *table = NULL, *w;
-	ObjectBoard *board = (ObjectBoard *)data;
 	static struct BoardUpdateContainer *uc1, *uc2;
 
 	if(table == NULL)
@@ -120,12 +118,12 @@ GtkWidget *object_board_properties(gpointer data)
 		g_object_ref(G_OBJECT(table));
 	}
 
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(p_w->widget), board->holes_x);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(p_h->widget), board->holes_y);
-	uc1->var = &(board->holes_x);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(p_w->widget), o->x2);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(p_h->widget), o->y2);
+	uc1->var = &(o->x2);
 	uc1->global_var = &g_holes_x;
 	property_update_handler(p_w, uc1);
-	uc2->var = &(board->holes_y);
+	uc2->var = &(o->y2);
 	uc2->global_var = &g_holes_y;
 	property_update_handler(p_h, uc2);
 

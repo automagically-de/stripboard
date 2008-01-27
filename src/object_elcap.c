@@ -5,10 +5,10 @@
 #include "object_elcap.h"
 #include "misc.h"
 
-gboolean object_elcap_draw(cairo_t *cairo, LayerID layerid, gpointer object);
-gboolean object_elcap_select(gpointer data, gdouble x, gdouble y,
+gboolean object_elcap_draw(cairo_t *cairo, LayerID layerid, Object *o);
+gboolean object_elcap_select(Object *o, gdouble x, gdouble y,
 	gint32 hx, gint32 hy);
-GtkWidget *object_elcap_properties(gpointer data);
+GtkWidget *object_elcap_properties(Object *o);
 
 ObjectType object_elcap = {
 	"elcap",
@@ -25,26 +25,22 @@ Object *object_elcap_new(guint32 x1, guint32 y1, guint32 x2, guint32 y2,
 	ObjectElCap *elcap;
 
 	elcap = g_new0(ObjectElCap, 1);
-	elcap->x1 = x1;
-	elcap->x2 = x2;
-	elcap->y1 = y1;
-	elcap->y2 = y2;
 	elcap->color = color;
 	elcap->diameter = diameter;
 	elcap->dpin = dpin;
 
-	return object_create(&object_elcap, elcap);
+	return object_create(&object_elcap, elcap, x1, y1, x2, y2);
 }
 
-gboolean object_elcap_draw(cairo_t *cairo, LayerID layerid, gpointer object)
+gboolean object_elcap_draw(cairo_t *cairo, LayerID layerid, Object *o)
 {
-    ObjectElCap *elcap = (ObjectElCap *)object;
+    ObjectElCap *elcap = (ObjectElCap *)o->data;
 	gdouble cx, cy, angle, delta, bw;
 
-	cx = MIN(elcap->x1, elcap->x2) + ABS((gdouble)(elcap->x2-elcap->x1) / 2.0);
-	cy = MIN(elcap->y1, elcap->y2) + ABS((gdouble)(elcap->y2-elcap->y1) / 2.0);
-	angle = misc_angle(elcap->x1, elcap->y1, elcap->x2, elcap->y2);
-	delta = misc_delta(elcap->x1, elcap->y1, elcap->x2, elcap->y2);
+	cx = MIN(o->x1, o->x2) + ABS((gdouble)(o->x2 - o->x1) / 2.0);
+	cy = MIN(o->y1, o->y2) + ABS((gdouble)(o->y2 - o->y1) / 2.0);
+	angle = misc_angle(o->x1, o->y1, o->x2, o->y2);
+	delta = misc_delta(o->x1, o->y1, o->x2, o->y2);
 
 	cairo_translate(cairo, HOLE_TO_POINT(cx), HOLE_TO_POINT(cy));
 	cairo_rotate(cairo, angle);
@@ -120,19 +116,19 @@ gboolean object_elcap_draw(cairo_t *cairo, LayerID layerid, gpointer object)
 	return TRUE;
 }
 
-gboolean object_elcap_select(gpointer data, gdouble x, gdouble y,
+gboolean object_elcap_select(Object *o, gdouble x, gdouble y,
 	gint32 hx, gint32 hy)
 {
-	ObjectElCap *elcap = (ObjectElCap *)data;
+	ObjectElCap *elcap = (ObjectElCap *)o->data;
 	gdouble cx, cy, d;
 
-	if(object_select_line(data, x, y, hx, hy))
+	if(object_select_line(o, x, y, hx, hy))
 		return TRUE;
 
-	cx = HOLE_TO_POINT(MIN(elcap->x1, elcap->x2)) +
-		HOLES_TO_POINT(ABS(elcap->x2 - elcap->x1) / 2.0);
-	cy = HOLE_TO_POINT(MIN(elcap->y1, elcap->y2)) +
-		HOLES_TO_POINT(ABS(elcap->y2 - elcap->y1) / 2.0);
+	cx = HOLE_TO_POINT(MIN(o->x1, o->x2)) +
+		HOLES_TO_POINT(ABS(o->x2 - o->x1) / 2.0);
+	cy = HOLE_TO_POINT(MIN(o->y1, o->y2)) +
+		HOLES_TO_POINT(ABS(o->y2 - o->y1) / 2.0);
 	d = misc_delta(cx, cy, x, y);
 
 	if(d <= (MM2PT(elcap->diameter) / 2.0))
@@ -141,11 +137,11 @@ gboolean object_elcap_select(gpointer data, gdouble x, gdouble y,
 	return FALSE;
 }
 
-GtkWidget *object_elcap_properties(gpointer data)
+GtkWidget *object_elcap_properties(Object *o)
 {
 	static PropertyPrivate *p_dia, *p_col;
 	static GtkWidget *table = NULL, *w;
-	ObjectElCap *elcap = (ObjectElCap *)data;
+	ObjectElCap *elcap = (ObjectElCap *)o->data;
 
 	if(table == NULL)
 	{

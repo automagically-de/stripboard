@@ -5,9 +5,8 @@
 #include "property.h"
 #include "misc.h"
 
-gboolean object_resistor_draw(cairo_t *cairo, LayerID layerid,
-	gpointer object);
-GtkWidget *object_resistor_properties(gpointer data);
+gboolean object_resistor_draw(cairo_t *cairo, LayerID layerid, Object *o);
+GtkWidget *object_resistor_properties(Object *o);
 
 static gdouble g_res_r = 51.0;
 
@@ -54,16 +53,12 @@ Object *object_resistor_new(guint32 x1, guint32 y1, guint32 x2,
 	ObjectResistor *resistor;
 
 	resistor = g_new0(ObjectResistor, 1);
-	resistor->x1 = x1;
-	resistor->x2 = x2;
-	resistor->y1 = y1;
-	resistor->y2 = y2;
 	if(r < 0)
 		resistor->r = g_res_r;
 	else
 		resistor->r = r;
 
-	return object_create(&object_resistor, resistor);
+	return object_create(&object_resistor, resistor, x1, y1, x2, y2);
 }
 
 static gboolean get_rings_3(gdouble r, guint32 *r1, guint32 *r2, guint32 *rm)
@@ -83,18 +78,16 @@ static gboolean get_rings_3(gdouble r, guint32 *r1, guint32 *r2, guint32 *rm)
 	return TRUE;
 }
 
-gboolean object_resistor_draw(cairo_t *cairo, LayerID layerid, gpointer object)
+gboolean object_resistor_draw(cairo_t *cairo, LayerID layerid, Object *o)
 {
-    ObjectResistor *resistor = (ObjectResistor *)object;
+    ObjectResistor *resistor = (ObjectResistor *)o->data;
 	gdouble cx, cy, angle, delta;
 	guint32 r1, r2, rm;
 
-	cx = MIN(resistor->x1, resistor->x2) +
-		ABS((gdouble)(resistor->x2 - resistor->x1) / 2.0);
-	cy = MIN(resistor->y1, resistor->y2) +
-		ABS((gdouble)(resistor->y2 - resistor->y1) / 2.0);
-	angle = misc_angle(resistor->x1, resistor->y1, resistor->x2, resistor->y2);
-	delta = misc_delta(resistor->x1, resistor->y1, resistor->x2, resistor->y2);
+	cx = MIN(o->x1, o->x2) + ABS((gdouble)(o->x2 - o->x1) / 2.0);
+	cy = MIN(o->y1, o->y2) + ABS((gdouble)(o->y2 - o->y1) / 2.0);
+	angle = misc_angle(o->x1, o->y1, o->x2, o->y2);
+	delta = misc_delta(o->x1, o->y1, o->x2, o->y2);
 
 	cairo_translate(cairo, HOLE_TO_POINT(cx), HOLE_TO_POINT(cy));
 	cairo_rotate(cairo, angle);
@@ -195,11 +188,11 @@ gboolean object_resistor_draw(cairo_t *cairo, LayerID layerid, gpointer object)
 	return TRUE;
 }
 
-GtkWidget *object_resistor_properties(gpointer data)
+GtkWidget *object_resistor_properties(Object *o)
 {
 	static PropertyPrivate *p_r;
 	static GtkWidget *table = NULL, *w;
-	ObjectResistor *res = (ObjectResistor *)data;
+	ObjectResistor *res = (ObjectResistor *)o->data;
 
 	if(table == NULL)
 	{

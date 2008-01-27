@@ -5,8 +5,8 @@
 #include "misc.h"
 #include "property.h"
 
-gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, gpointer object);
-GtkWidget *object_wire_properties(gpointer data);
+gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, Object *o);
+GtkWidget *object_wire_properties(Object *o);
 
 ObjectType object_wire = {
 	"LED",
@@ -23,24 +23,20 @@ Object *object_wire_new(guint32 x1, guint32 y1, guint32 x2, guint32 y2,
 	ObjectWire *wire;
 
 	wire = g_new0(ObjectWire, 1);
-	wire->x1 = x1;
-	wire->x2 = x2;
-	wire->y1 = y1;
-	wire->y2 = y2;
 	wire->color = color;
 
-	return object_create(&object_wire, wire);
+	return object_create(&object_wire, wire, x1, y1, x2, y2);
 }
 
-gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, gpointer object)
+gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, Object *o)
 {
-    ObjectWire *wire = (ObjectWire *)object;
+    ObjectWire *wire = (ObjectWire *)o->data;
 	gdouble cx, cy, angle, delta;
 
-	cx = MIN(wire->x1, wire->x2) + ABS((gdouble)(wire->x2 - wire->x1) / 2.0);
-	cy = MIN(wire->y1, wire->y2) + ABS((gdouble)(wire->y2 - wire->y1) / 2.0);
-	angle = misc_angle(wire->x1, wire->y1, wire->x2, wire->y2);
-	delta = misc_delta(wire->x1, wire->y1, wire->x2, wire->y2);
+	cx = MIN(o->x1, o->x2) + ABS((gdouble)(o->x2 - o->x1) / 2.0);
+	cy = MIN(o->y1, o->y2) + ABS((gdouble)(o->y2 - o->y1) / 2.0);
+	angle = misc_angle(o->x1, o->y1, o->x2, o->y2);
+	delta = misc_delta(o->x1, o->y1, o->x2, o->y2);
 
 	cairo_translate(cairo, HOLE_TO_POINT(cx), HOLE_TO_POINT(cy));
 	cairo_rotate(cairo, angle);
@@ -86,11 +82,11 @@ gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, gpointer object)
 	return TRUE;
 }
 
-GtkWidget *object_wire_properties(gpointer data)
+GtkWidget *object_wire_properties(Object *o)
 {
 	static PropertyPrivate *p_col;
 	static GtkWidget *table = NULL, *w;
-	ObjectWire *wire = (ObjectWire *)data;
+	ObjectWire *wire = (ObjectWire *)o->data;
 
 	if(table == NULL)
 	{
