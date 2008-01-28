@@ -8,6 +8,7 @@
 typedef enum {
 	PROPERTY_UNHANDLED = 0,
 	PROPERTY_DOUBLE,
+	PROPERTY_INTEGER,
 	PROPERTY_COLOR,
 	PROPERTY_CUSTOM = 255
 } PropertyType;
@@ -35,11 +36,27 @@ gchar *property_var_to_str(PropertyType type, gpointer var);
 gchar *property_type_to_str(PropertyType type);
 
 GtkWidget *property_default_properties_handler(Object *o);
+Property *property_get_by_name(Object *o, const gchar *title);
 
 PropertyPrivate *property_new_double(gdouble defval, gdouble min, gdouble max,
 	gdouble step);
+PropertyPrivate *property_new_integer(gint32 defval, gint32 min, gint32 max);
 PropertyPrivate *property_new_color(guint32 defval);
 PropertyPrivate *property_new_custom(GtkWidget *widget, const gchar *signal,
 	GCallback callback);
+
+#define property_set_var(o, title, type, value) \
+	do { \
+		Property *p = property_get_by_name(o, title); \
+		if(p != NULL) \
+			*((type *)(p)->var) = value; \
+	} while(0)
+
+#define property_set_integer(o, title, value) \
+	property_set_var(o, title, gint32, value)
+#define property_set_double(o, title, value) \
+	property_set_var(o, title, gdouble, value)
+#define property_set_color(o, title, value) \
+	property_set_var(o, title, guint32, value)
 
 #endif /* _PROPERTY_H */

@@ -67,8 +67,112 @@ gboolean object_save_to_file(const gchar *filename)
 	return TRUE;
 }
 
+static void parse_start_elem(GMarkupParseContext *context, const gchar *elem,
+	const gchar **attribute_names, const gchar **attribute_values,
+	gpointer user_data, GError **error)
+{
+	Object *o;
+
+	if(strcmp(elem, "object") == 0)
+	{
+		if(strcmp(attribute_values[0], "board") != 0)
+		{
+			o = object_wire_new(0, 0, 1, 1, 0x0);
+		}
+		else
+			o = (Object *)g_slist_nth_data(objects, 0);
+		*((Object **)user_data) = o;
+	}
+	else if(strcmp(elem, "coordinates") == 0)
+	{
+		o = *((Object **)user_data);
+		if(o != NULL)
+		{
+			o->x1 = atoi(attribute_values[0]);
+			o->y1 = atoi(attribute_values[1]);
+			o->x2 = atoi(attribute_values[2]);
+			o->y2 = atoi(attribute_values[3]);
+		}
+	}
+	else if(strcmp(elem, "property") == 0)
+	{
+	}
+}
+
+static void parse_end_elem(GMarkupParseContext *context, const gchar *elem,
+	gpointer user_data, GError **error)
+{
+	Object *o;
+
+	if(strcmp(elem, "object") == 0)
+	{
+		o = *((Object **)user_data);
+		if(o != NULL)
+		{
+			/* add object to list -- but not the board */
+			if(strcmp(o->type->title, "board") != 0)
+				object_add(o);
+			*((Object **)user_data) = NULL;
+		}
+	}
+}
+
 gboolean object_load_from_file(const gchar *filename)
 {
+	FILE *f;
+	gint32 r, l, c;
+	gchar buffer[2048];
+	GMarkupParseContext *ctx;
+	static const GMarkupParser parser = { parse_start_elem, parse_end_elem,
+		NULL, /* text */ NULL, /* passthrough */ NULL  /* error */ };
+	GError *error;
+	Object *o = NULL;
+
+	/* remove objects */
+	object_remove_all();
+
+	f = fopen(filename, "r");
+	if(f == NULL)
+	{
+		g_warning("failed to open file '%s' for reading: %s (%d)",
+			filename, strerror(errno), errno);
+		return FALSE;
+	}
+
+	ctx = g_markup_parse_context_new(&parser, 0, &o, NULL);
+
+	while(!feof(f))
+	{
+		fgets(buffer, 2048, f);
+		r = strlen(buffer);
+
+		/* skip empty lines */
+		if(r <= 0)
+			continue;
+
+		error = NULL;
+		if(g_markup_parse_context_parse(ctx, buffer, r, &error) != TRUE)
+		{
+			g_markup_parse_context_get_position(ctx, &l, &c);
+			g_warning("XML parse failed for file '%s' at line %d, char %d: %s",
+				filename, l, c, error->message);
+			g_error_free(error);
+#if 0
+			g_markup_parse_context_free(ctx);
+			fclose(f);
+			return FALSE;
+#endif
+		}
+	}
+	fclose(f);
+
+	/* update global variables */
+	o = (Object *)g_slist_nth_data(objects, 0);
+	g_holes_x = o->x2;
+	g_holes_y = o->y2;
+	gui_set_drawing_area_size();
+
+	g_markup_parse_context_free(ctx);
 	return FALSE;
 }
 

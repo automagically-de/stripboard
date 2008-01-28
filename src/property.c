@@ -1,7 +1,9 @@
+#include "main.h"
 #include "property.h"
 #include "object.h"
 
 static gboolean double_update_handler(PropertyPrivate *priv, gdouble *var);
+static gboolean integer_update_handler(PropertyPrivate *priv, gint32 *var);
 static gboolean color_update_handler(PropertyPrivate *priv, guint32 *var);
 static gboolean custom_update_handler(PropertyPrivate *priv, gpointer var);
 
@@ -14,6 +16,20 @@ GtkWidget *property_get_widget(PropertyPrivate *priv)
 	return priv->widget;
 }
 
+Property *property_get_by_name(Object *o, const gchar *title)
+{
+	GSList *item;
+	Property *p;
+
+	for(item = o->properties; item != NULL; item = item->next)
+	{
+		p = (Property *)item->data;
+		if(strcmp(p->title, title) == 0)
+			return p;
+	}
+	return NULL;
+}
+
 gboolean property_update_handler(PropertyPrivate *priv, gpointer var)
 {
 	if(priv->signal_handler >= 0)
@@ -23,6 +39,8 @@ gboolean property_update_handler(PropertyPrivate *priv, gpointer var)
 	{
 		case PROPERTY_DOUBLE:
 			return double_update_handler(priv, (gdouble *)var);
+		case PROPERTY_INTEGER:
+			return integer_update_handler(priv, (gint32 *)var);
 		case PROPERTY_COLOR:
 			return color_update_handler(priv, (guint32 *)var);
 
@@ -52,13 +70,12 @@ gchar *property_type_to_str(PropertyType type)
 	{
 		case PROPERTY_DOUBLE:
 			return g_strdup("double");
-			break;
+		case PROPERTY_INTEGER:
+			return g_strdup("integer");
 		case PROPERTY_COLOR:
 			return g_strdup("color");
-			break;
 		default:
 			return g_strdup("unhandled");
-			break;
 	}
 }
 
@@ -68,13 +85,12 @@ gchar *property_var_to_str(PropertyType type, gpointer var)
 	{
 		case PROPERTY_DOUBLE:
 			return g_strdup_printf("%f", *((gdouble *)var));
-			break;
+		case PROPERTY_INTEGER:
+			return g_strdup_printf("%i", *((gint32 *)var));
 		case PROPERTY_COLOR:
 			return g_strdup_printf("0x%08X", *((guint32 *)var));
-			break;
 		default:
 			return g_strdup("");
-			break;
 	}
 }
 
@@ -199,6 +215,55 @@ static gboolean double_update_handler(PropertyPrivate *priv, gdouble *var)
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(priv->signal_widget),
 		((var != NULL) ? *var : dpriv->defval));
+
+	return TRUE;
+}
+
+/*****************************************************************************/
+/* integer                                                                   */
+/*****************************************************************************/
+
+typedef struct {
+	gint32 defval;
+	gint32 min;
+	gint32 max;
+} PropertyPrivateInteger;
+
+PropertyPrivate *property_new_integer(gint32 defval, gint32 min, gint32 max)
+{
+	PropertyPrivate *priv;
+	PropertyPrivateInteger *ipriv;
+
+	priv = g_new0(PropertyPrivate, 1);
+	priv->type = PROPERTY_INTEGER;
+	priv->signal_handler = -1;
+	ipriv = g_new0(PropertyPrivateInteger, 1);
+	ipriv->defval = defval;
+	ipriv->min = min;
+	ipriv->max = max;
+	priv->custom = ipriv;
+	priv->widget = gtk_spin_button_new_with_range(min, max, 1);
+	priv->signal_widget = priv->widget;
+
+	return priv;
+}
+
+static void integer_spin_changed_cb(GtkSpinButton *spinbutton, gpointer data)
+{
+	*((gint32 *)data) = gtk_spin_button_get_value_as_int(spinbutton);
+	object_redraw(NULL);
+}
+
+static gboolean integer_update_handler(PropertyPrivate *priv, gint32 *var)
+{
+	PropertyPrivateInteger *ipriv = (PropertyPrivateInteger *)priv->custom;
+
+	priv->signal_handler = g_signal_connect(G_OBJECT(priv->signal_widget),
+		"value-changed", G_CALLBACK(integer_spin_changed_cb),
+		((var != NULL) ? var : &(ipriv->defval)));
+
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(priv->signal_widget),
+		((var != NULL) ? *var : ipriv->defval));
 
 	return TRUE;
 }

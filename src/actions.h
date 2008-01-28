@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 
 void actions_New(void);
+void actions_Open(void);
 void actions_Save(void);
 
 /* GtkActionEntry:
@@ -19,7 +20,7 @@ static GtkActionEntry action_entries[] =
 	{ "LoadAction", GTK_STOCK_OPEN,
 		"_Load", "<control>O",
 		"Load board layout",
-		NULL },
+		G_CALLBACK(actions_Open) },
 	{ "SaveAction", GTK_STOCK_SAVE,
 		"_Save", "<control>S",
 		"Save board layout",

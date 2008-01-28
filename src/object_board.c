@@ -18,10 +18,18 @@ ObjectType object_board = {
 
 Object *object_board_new(guint32 holes_x, guint32 holes_y)
 {
+	Object *o;
 	ObjectBoard *oboard;
+	PropertyPrivate *priv;
 
 	oboard = g_new0(ObjectBoard, 1);
-	return object_create(&object_board, oboard, 0, 0, holes_x, holes_y);
+	o = object_create(&object_board, oboard, 0, 0, holes_x, holes_y);
+	priv = property_new_integer(15, 1, 100);
+	property_add(o, "width", priv, &(o->x2));
+	priv = property_new_integer(10, 1, 100);
+	property_add(o, "height", priv, &(o->y2));
+
+	return o;
 }
 
 gboolean object_board_draw(cairo_t *cairo, LayerID layerid, Object *o)
