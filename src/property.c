@@ -46,6 +46,38 @@ gboolean property_add(Object *o, const gchar *title, PropertyPrivate *priv,
 	return TRUE;
 }
 
+gchar *property_type_to_str(PropertyType type)
+{
+	switch(type)
+	{
+		case PROPERTY_DOUBLE:
+			return g_strdup("double");
+			break;
+		case PROPERTY_COLOR:
+			return g_strdup("color");
+			break;
+		default:
+			return g_strdup("unhandled");
+			break;
+	}
+}
+
+gchar *property_var_to_str(PropertyType type, gpointer var)
+{
+	switch(type)
+	{
+		case PROPERTY_DOUBLE:
+			return g_strdup_printf("%f", *((gdouble *)var));
+			break;
+		case PROPERTY_COLOR:
+			return g_strdup_printf("0x%08X", *((guint32 *)var));
+			break;
+		default:
+			return g_strdup("");
+			break;
+	}
+}
+
 GtkWidget *property_default_properties_handler(Object *o)
 {
 	GtkWidget *w, *table;

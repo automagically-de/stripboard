@@ -3,6 +3,7 @@
 #include "misc.h"
 #include "gui.h"
 #include "object_board.h"
+#include "property.h"
 
 static GSList *objects = NULL;
 static GSList *objects_selected = NULL;
@@ -14,6 +15,61 @@ gboolean object_init(void)
 
 void object_cleanup(void)
 {
+}
+
+gboolean object_save_to_file(const gchar *filename)
+{
+	GSList *oitem, *pitem;
+	FILE *f;
+	Object *o;
+	Property *p;
+	gchar *s, *t1, *t2;
+
+	f = fopen(filename, "w");
+	if(f == NULL)
+	{
+		g_warning("failed to open %s: %s (%d)", filename,
+			strerror(errno), errno);
+		return FALSE;
+	}
+
+	fputs("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		"<stripboard>\n", f);
+	for(oitem = objects; oitem != NULL; oitem = oitem->next)
+	{
+		o = (Object *)oitem->data;
+		s = g_markup_printf_escaped(
+			"\t<object type=\"%s\">\n"
+			"\t\t<coordinates x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" />\n",
+			o->type->title, o->x1, o->y1, o->x2, o->y2);
+		fputs(s, f);
+		g_free(s);
+		/* properties */
+		for(pitem = o->properties; pitem != NULL; pitem = pitem->next)
+		{
+			p = (Property *)pitem->data;
+			t1 = property_type_to_str(p->priv->type);
+			t2 = property_var_to_str(p->priv->type, p->var);
+			s = g_markup_printf_escaped(
+				"\t\t<property type=\"%s\" title=\"%s\" value=\"%s\" />\n",
+				t1, p->title, t2);
+			fputs(s, f);
+			g_free(s);
+			g_free(t1);
+			g_free(t2);
+		}
+		fputs("\t</object>\n", f);
+	}
+	fputs("</stripboard>\n", f);
+
+	fclose(f);
+
+	return TRUE;
+}
+
+gboolean object_load_from_file(const gchar *filename)
+{
+	return FALSE;
 }
 
 gboolean object_render(cairo_t *cairo, LayerID layerid, Object *object)

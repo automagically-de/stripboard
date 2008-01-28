@@ -31,6 +31,9 @@ gboolean property_update_handler(PropertyPrivate *priv, gpointer var);
 gboolean property_add(Object *o, const gchar *title, PropertyPrivate *priv,
 		gpointer var);
 
+gchar *property_var_to_str(PropertyType type, gpointer var);
+gchar *property_type_to_str(PropertyType type);
+
 GtkWidget *property_default_properties_handler(Object *o);
 
 PropertyPrivate *property_new_double(gdouble defval, gdouble min, gdouble max,

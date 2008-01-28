@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 
 void actions_New(void);
+void actions_Save(void);
 
 /* GtkActionEntry:
  * name, stock id, label, accelerator, tooltip, callback */
@@ -22,7 +23,7 @@ static GtkActionEntry action_entries[] =
 	{ "SaveAction", GTK_STOCK_SAVE,
 		"_Save", "<control>S",
 		"Save board layout",
-		NULL },
+		G_CALLBACK(actions_Save) },
 	{ "QuitAction", GTK_STOCK_QUIT,
 		"_Quit", "<control>Q",
 		"Quit",

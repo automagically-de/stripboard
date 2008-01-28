@@ -8,7 +8,7 @@
 gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, Object *o);
 
 ObjectType object_wire = {
-	"LED",
+	"wire",
 	NULL,
 	NULL,
 	object_wire_draw,

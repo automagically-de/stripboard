@@ -41,6 +41,9 @@ struct _Object {
 gboolean object_init(void);
 void object_cleanup(void);
 
+gboolean object_save_to_file(const gchar *filename);
+gboolean object_load_from_file(const gchar *filename);
+
 Object *object_create(ObjectType *type, gpointer data,
 	gint32 x1, gint32 y1, gint32 x2, gint32 y2);
 gboolean object_add(Object *object);
