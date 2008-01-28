@@ -2,6 +2,7 @@
 #include "layers.h"
 #include "object.h"
 #include "object_led.h"
+#include "property.h"
 #include "misc.h"
 
 gboolean object_led_draw(cairo_t *cairo, LayerID layerid, Object *o);
@@ -12,18 +13,24 @@ ObjectType object_led = {
 	NULL,
 	object_led_draw,
 	object_select_line,
-	NULL
+	property_default_properties_handler
 };
 
 Object *object_led_new(guint32 x1, guint32 y1, guint32 x2, guint32 y2,
 	guint32 color)
 {
+	Object *o;
 	ObjectLED *led;
+	PropertyPrivate *priv;
 
 	led = g_new0(ObjectLED, 1);
 	led->color = color;
 
-	return object_create(&object_led, led, x1, y1, x2, y2);
+	o = object_create(&object_led, led, x1, y1, x2, y2);
+	priv = property_new_color(0x10FF10FFUL);
+	property_add(o, "color", priv, &(led->color));
+
+	return o;
 }
 
 gboolean object_led_draw(cairo_t *cairo, LayerID layerid, Object *o)

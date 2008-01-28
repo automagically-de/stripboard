@@ -21,9 +21,6 @@ Object *object_board_new(guint32 holes_x, guint32 holes_y)
 	ObjectBoard *oboard;
 
 	oboard = g_new0(ObjectBoard, 1);
-	oboard->holes_x = holes_x;
-	oboard->holes_y = holes_y;
-
 	return object_create(&object_board, oboard, 0, 0, holes_x, holes_y);
 }
 

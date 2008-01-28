@@ -33,7 +33,8 @@ struct _Object {
 	gint32 y1;
 	gint32 x2;
 	gint32 y2;
-	gpointer properties;
+	GSList *properties;
+	GtkWidget *properties_widget;
 	gpointer data;
 };
 

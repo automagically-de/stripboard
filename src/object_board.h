@@ -4,8 +4,7 @@
 #include "object.h"
 
 typedef struct {
-	guint32 holes_x;
-	guint32 holes_y;
+	gpointer reserved;
 } ObjectBoard;
 
 Object *object_board_new(guint32 holes_x, guint32 holes_y);

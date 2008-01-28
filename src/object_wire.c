@@ -6,7 +6,6 @@
 #include "property.h"
 
 gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, Object *o);
-GtkWidget *object_wire_properties(Object *o);
 
 ObjectType object_wire = {
 	"LED",
@@ -14,18 +13,24 @@ ObjectType object_wire = {
 	NULL,
 	object_wire_draw,
 	object_select_line,
-	object_wire_properties
+	property_default_properties_handler
 };
 
 Object *object_wire_new(guint32 x1, guint32 y1, guint32 x2, guint32 y2,
 	guint32 color)
 {
+	Object *o;
 	ObjectWire *wire;
+	PropertyPrivate *priv;
 
 	wire = g_new0(ObjectWire, 1);
 	wire->color = color;
 
-	return object_create(&object_wire, wire, x1, y1, x2, y2);
+	o = object_create(&object_wire, wire, x1, y1, x2, y2);
+	priv = property_new_color(0x20FF40FF);
+	property_add(o, "color", priv, &(wire->color));
+
+	return o;
 }
 
 gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, Object *o)
@@ -82,26 +87,3 @@ gboolean object_wire_draw(cairo_t *cairo, LayerID layerid, Object *o)
 	return TRUE;
 }
 
-GtkWidget *object_wire_properties(Object *o)
-{
-	static PropertyPrivate *p_col;
-	static GtkWidget *table = NULL, *w;
-	ObjectWire *wire = (ObjectWire *)o->data;
-
-	if(table == NULL)
-	{
-		table = gtk_table_new(1, 2, FALSE);
-		w = gtk_label_new("color");
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 0, 1, 0, 1);
-		p_col = property_new_color(0x20FF40FF);
-		w = property_get_widget(p_col);
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 1, 2, 0, 1);
-
-		gtk_widget_show_all(table);
-		g_object_ref(G_OBJECT(table));
-	}
-
-	property_update_handler(p_col, &(wire->color));
-
-	return table;
-}

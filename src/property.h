@@ -3,6 +3,8 @@
 
 #include <gtk/gtk.h>
 
+#include "object.h"
+
 typedef enum {
 	PROPERTY_UNHANDLED = 0,
 	PROPERTY_DOUBLE,
@@ -18,8 +20,18 @@ typedef struct {
 	gpointer custom;
 } PropertyPrivate;
 
+typedef struct {
+	gpointer var;
+	const gchar *title;
+	PropertyPrivate *priv;
+} Property;
+
 GtkWidget *property_get_widget(PropertyPrivate *priv);
 gboolean property_update_handler(PropertyPrivate *priv, gpointer var);
+gboolean property_add(Object *o, const gchar *title, PropertyPrivate *priv,
+		gpointer var);
+
+GtkWidget *property_default_properties_handler(Object *o);
 
 PropertyPrivate *property_new_double(gdouble defval, gdouble min, gdouble max,
 	gdouble step);

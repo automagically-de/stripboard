@@ -10,7 +10,10 @@ gboolean tools_select(ToolID id)
 {
 	g_selected_tool = id;
 	if(g_selected_tool != TOOL_SELECT)
+	{
 		gui_set_selection(NULL);
+		gui_set_properties_widget(NULL);
+	}
 	return TRUE;
 }
 

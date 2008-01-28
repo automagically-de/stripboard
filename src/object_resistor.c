@@ -6,7 +6,6 @@
 #include "misc.h"
 
 gboolean object_resistor_draw(cairo_t *cairo, LayerID layerid, Object *o);
-GtkWidget *object_resistor_properties(Object *o);
 
 static gdouble g_res_r = 51.0;
 
@@ -16,7 +15,7 @@ ObjectType object_resistor = {
 	NULL,
 	object_resistor_draw,
 	object_select_line,
-	object_resistor_properties
+	property_default_properties_handler
 };
 
 static guint32 ring_colors[] = {
@@ -50,7 +49,9 @@ static guint32 multiplier_colors[] = {
 Object *object_resistor_new(guint32 x1, guint32 y1, guint32 x2,
 	guint32 y2, gdouble r)
 {
+	Object *o;
 	ObjectResistor *resistor;
+	PropertyPrivate *priv;
 
 	resistor = g_new0(ObjectResistor, 1);
 	if(r < 0)
@@ -58,7 +59,11 @@ Object *object_resistor_new(guint32 x1, guint32 y1, guint32 x2,
 	else
 		resistor->r = r;
 
-	return object_create(&object_resistor, resistor, x1, y1, x2, y2);
+	o = object_create(&object_resistor, resistor, x1, y1, x2, y2);
+	priv = property_new_double(resistor->r, 0, 99.*1000.*1000.*1000., 1.0);
+	property_add(o, "resistance", priv, &(resistor->r));
+
+	return o;
 }
 
 static gboolean get_rings_3(gdouble r, guint32 *r1, guint32 *r2, guint32 *rm)
@@ -188,28 +193,3 @@ gboolean object_resistor_draw(cairo_t *cairo, LayerID layerid, Object *o)
 	return TRUE;
 }
 
-GtkWidget *object_resistor_properties(Object *o)
-{
-	static PropertyPrivate *p_r;
-	static GtkWidget *table = NULL, *w;
-	ObjectResistor *res = (ObjectResistor *)o->data;
-
-	if(table == NULL)
-	{
-		/* initialize widget */
-		table = gtk_table_new(1, 2, FALSE);
-		w = gtk_label_new("R:");
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 0, 1, 0, 1);
-
-		p_r = property_new_double(100, 0, 99.*1000.*1000.*1000., 1.0);
-		w = property_get_widget(p_r);
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 1, 2, 0, 1);
-
-		gtk_widget_show_all(table);
-		g_object_ref(G_OBJECT(table));
-	}
-
-	property_update_handler(p_r, &(res->r));
-
-	return table;
-}

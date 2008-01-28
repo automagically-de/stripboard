@@ -8,7 +8,6 @@
 gboolean object_elcap_draw(cairo_t *cairo, LayerID layerid, Object *o);
 gboolean object_elcap_select(Object *o, gdouble x, gdouble y,
 	gint32 hx, gint32 hy);
-GtkWidget *object_elcap_properties(Object *o);
 
 ObjectType object_elcap = {
 	"elcap",
@@ -16,20 +15,30 @@ ObjectType object_elcap = {
 	NULL,
 	object_elcap_draw,
 	object_elcap_select,
-	object_elcap_properties
+	property_default_properties_handler
 };
 
 Object *object_elcap_new(guint32 x1, guint32 y1, guint32 x2, guint32 y2,
 	guint32 color, gdouble diameter, gdouble dpin)
 {
+	Object *o;
 	ObjectElCap *elcap;
+	PropertyPrivate *priv;
 
 	elcap = g_new0(ObjectElCap, 1);
 	elcap->color = color;
 	elcap->diameter = diameter;
 	elcap->dpin = dpin;
 
-	return object_create(&object_elcap, elcap, x1, y1, x2, y2);
+	o = object_create(&object_elcap, elcap, x1, y1, x2, y2);
+	priv = property_new_double(elcap->diameter, 3, 20, 0.5);
+	property_add(o, "diameter", priv, &(elcap->diameter));
+	priv = property_new_double(elcap->dpin, 2.54, 100, 2.54);
+	property_add(o, "pin distance", priv, &(elcap->dpin));
+	priv = property_new_color(elcap->color);
+	property_add(o, "color", priv, &(elcap->color));
+
+	return o;
 }
 
 gboolean object_elcap_draw(cairo_t *cairo, LayerID layerid, Object *o)
@@ -137,34 +146,3 @@ gboolean object_elcap_select(Object *o, gdouble x, gdouble y,
 	return FALSE;
 }
 
-GtkWidget *object_elcap_properties(Object *o)
-{
-	static PropertyPrivate *p_dia, *p_col;
-	static GtkWidget *table = NULL, *w;
-	ObjectElCap *elcap = (ObjectElCap *)o->data;
-
-	if(table == NULL)
-	{
-		table = gtk_table_new(2, 2, FALSE);
-
-		w = gtk_label_new("diameter:");
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 0, 1, 0, 1);
-		p_dia = property_new_double(8, 3, 20, 0.5);
-		w = property_get_widget(p_dia);
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 1, 2, 0, 1);
-
-		w = gtk_label_new("color:");
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 0, 1, 1, 2);
-		p_col = property_new_color(0x101050FF);
-		w = property_get_widget(p_col);
-		gtk_table_attach_defaults(GTK_TABLE(table), w, 1, 2, 1, 2);
-
-		gtk_widget_show_all(table);
-		g_object_ref(G_OBJECT(table));
-	}
-
-	property_update_handler(p_dia, &(elcap->diameter));
-	property_update_handler(p_col, &(elcap->color));
-
-	return table;
-}

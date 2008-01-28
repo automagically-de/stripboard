@@ -2,10 +2,6 @@
 #define _OBJECT_LED_H
 
 typedef struct {
-	gint32 x1;
-	gint32 y1;
-	gint32 x2;
-	gint32 y2;
 	guint32 color;
 } ObjectLED;
 

@@ -33,6 +33,56 @@ gboolean property_update_handler(PropertyPrivate *priv, gpointer var)
 	}
 }
 
+gboolean property_add(Object *o, const gchar *title, PropertyPrivate *priv,
+	gpointer var)
+{
+	Property *prop;
+
+	prop = g_new0(Property, 1);
+	prop->title = title;
+	prop->priv = priv;
+	prop->var = var;
+	o->properties = g_slist_append(o->properties, prop);
+	return TRUE;
+}
+
+GtkWidget *property_default_properties_handler(Object *o)
+{
+	GtkWidget *w, *table;
+	GSList *item;
+	Property *prop;
+	gint32 i, len;
+
+	if(o->properties_widget == NULL)
+	{
+		len = g_slist_length(o->properties);
+		if(len <= 0)
+			return NULL;
+
+		table = gtk_table_new(len, 2, FALSE);
+		o->properties_widget = table;
+
+		for(item = o->properties, i = 0; item != NULL; item = item->next, i ++)
+		{
+			prop = (Property *)item->data;
+			w = gtk_label_new(prop->title);
+			gtk_table_attach_defaults(GTK_TABLE(table), w, 0, 1, i, i + 1);
+			w = property_get_widget(prop->priv);
+			gtk_table_attach_defaults(GTK_TABLE(table), w, 1, 2, i, i + 1);
+		}
+		gtk_widget_show_all(table);
+		g_object_ref(G_OBJECT(table));
+	}
+
+	for(item = o->properties, i = 0; item != NULL; item = item->next, i ++)
+	{
+		prop = (Property *)item->data;
+		property_update_handler(prop->priv, prop->var);
+	}
+
+	return o->properties_widget;
+}
+
 /*****************************************************************************/
 /* custom                                                                    */
 /*****************************************************************************/
@@ -95,6 +145,7 @@ PropertyPrivate *property_new_double(gdouble defval, gdouble min, gdouble max,
 	dpriv->max = max;
 	priv->custom = dpriv;
 	priv->widget = gtk_spin_button_new_with_range(min, max, step);
+	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(priv->widget), 3);
 	priv->signal_widget = priv->widget;
 
 	return priv;
