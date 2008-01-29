@@ -96,7 +96,11 @@ static void parse_start_elem(GMarkupParseContext *context, const gchar *elem,
 	}
 	else if(strcmp(elem, "property") == 0)
 	{
-	}
+		o = *((Object **)user_data);
+		if(o != NULL)
+			property_set_from_str(o, attribute_values[0], attribute_values[1],
+				attribute_values[2]);
+	} /* "property" */
 }
 
 static void parse_end_elem(GMarkupParseContext *context, const gchar *elem,
@@ -115,6 +119,11 @@ static void parse_end_elem(GMarkupParseContext *context, const gchar *elem,
 			*((Object **)user_data) = NULL;
 		}
 	}
+	else if(strcmp(elem, "stripboard") == 0)
+	{
+		*error = g_error_new(g_quark_from_string("stripboard"), 0xDEADBEEF,
+			"finished reading xml data");
+	}
 }
 
 gboolean object_load_from_file(const gchar *filename)
@@ -127,6 +136,7 @@ gboolean object_load_from_file(const gchar *filename)
 		NULL, /* text */ NULL, /* passthrough */ NULL  /* error */ };
 	GError *error;
 	Object *o = NULL;
+	gboolean finished_parsing = FALSE;
 
 	/* remove objects */
 	object_remove_all();
@@ -141,7 +151,7 @@ gboolean object_load_from_file(const gchar *filename)
 
 	ctx = g_markup_parse_context_new(&parser, 0, &o, NULL);
 
-	while(!feof(f))
+	while((!finished_parsing) && (!feof(f)))
 	{
 		fgets(buffer, 2048, f);
 		r = strlen(buffer);
@@ -153,15 +163,22 @@ gboolean object_load_from_file(const gchar *filename)
 		error = NULL;
 		if(g_markup_parse_context_parse(ctx, buffer, r, &error) != TRUE)
 		{
-			g_markup_parse_context_get_position(ctx, &l, &c);
-			g_warning("XML parse failed for file '%s' at line %d, char %d: %s",
-				filename, l, c, error->message);
-			g_error_free(error);
-#if 0
-			g_markup_parse_context_free(ctx);
-			fclose(f);
-			return FALSE;
-#endif
+			if(error->code != 0xDEADBEEF)
+			{
+				g_markup_parse_context_get_position(ctx, &l, &c);
+				g_warning("XML parse failed for file '%s' "
+					"at line %d, char %d: %s (%d)",
+					filename, l, c, error->message, error->code);
+				g_error_free(error);
+				g_markup_parse_context_free(ctx);
+				fclose(f);
+				return FALSE;
+			}
+			else
+			{
+				g_error_free(error);
+				finished_parsing = TRUE;
+			}
 		}
 	}
 	fclose(f);

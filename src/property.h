@@ -33,7 +33,9 @@ gboolean property_add(Object *o, const gchar *title, PropertyPrivate *priv,
 		gpointer var);
 
 gchar *property_var_to_str(PropertyType type, gpointer var);
+void property_str_to_var(PropertyType type, const gchar *str, gpointer var);
 gchar *property_type_to_str(PropertyType type);
+PropertyType property_str_to_type(const gchar *str);
 
 GtkWidget *property_default_properties_handler(Object *o);
 Property *property_get_by_name(Object *o, const gchar *title);
@@ -58,5 +60,8 @@ PropertyPrivate *property_new_custom(GtkWidget *widget, const gchar *signal,
 	property_set_var(o, title, gdouble, value)
 #define property_set_color(o, title, value) \
 	property_set_var(o, title, guint32, value)
+
+gboolean property_set_from_str(Object *o, const gchar *typestr,
+	const gchar *varname, const gchar *value);
 
 #endif /* _PROPERTY_H */

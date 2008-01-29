@@ -64,19 +64,63 @@ gboolean property_add(Object *o, const gchar *title, PropertyPrivate *priv,
 	return TRUE;
 }
 
+struct PropertyTypeConv {
+	PropertyType id;
+	const gchar *title;
+};
+
+static struct PropertyTypeConv p_types[] = {
+	 { PROPERTY_DOUBLE, "double" },
+	 { PROPERTY_INTEGER, "integer" },
+	 { PROPERTY_COLOR, "color" },
+	 { PROPERTY_CUSTOM, "custom" },
+
+	 { PROPERTY_UNHANDLED, "unhandled" /* last in list */ }
+};
+
 gchar *property_type_to_str(PropertyType type)
 {
-	switch(type)
+	static GHashTable *type_to_str = NULL;
+	gint32 i;
+	gchar *str;
+
+	if(type_to_str == NULL)
 	{
-		case PROPERTY_DOUBLE:
-			return g_strdup("double");
-		case PROPERTY_INTEGER:
-			return g_strdup("integer");
-		case PROPERTY_COLOR:
-			return g_strdup("color");
-		default:
-			return g_strdup("unhandled");
+		type_to_str = g_hash_table_new(g_int_hash, g_int_equal);
+		i = 0;
+		while(p_types[i].id != PROPERTY_UNHANDLED)
+		{
+			g_hash_table_insert(type_to_str, &(p_types[i].id),
+				(gpointer)p_types[i].title);
+			i ++;
+		}
 	}
+
+	str = (gchar *)g_hash_table_lookup(type_to_str, &type);
+	if(str != NULL)
+		return g_strdup(str);
+	else
+		return g_strdup("unhandled");
+}
+
+PropertyType property_str_to_type(const gchar *str)
+{
+	static GHashTable *str_to_type = NULL;
+	gint32 i;
+
+	if(str_to_type == NULL)
+	{
+		str_to_type = g_hash_table_new(g_str_hash, g_str_equal);
+		i = 0;
+		while(p_types[i].id != PROPERTY_UNHANDLED)
+		{
+			g_hash_table_insert(str_to_type, (gchar *)p_types[i].title,
+				GINT_TO_POINTER(p_types[i].id));
+			i ++;
+		}
+	}
+
+	return GPOINTER_TO_INT(g_hash_table_lookup(str_to_type, str));
 }
 
 gchar *property_var_to_str(PropertyType type, gpointer var)
@@ -92,6 +136,55 @@ gchar *property_var_to_str(PropertyType type, gpointer var)
 		default:
 			return g_strdup("");
 	}
+}
+
+void property_str_to_var(PropertyType type, const gchar *str, gpointer var)
+{
+	switch(type)
+	{
+		case PROPERTY_DOUBLE:
+			*((gdouble *)var) = atof(str);
+			break;
+		case PROPERTY_INTEGER:
+			*((gint32 *)var) = atoi(str);
+			break;
+		case PROPERTY_COLOR:
+			*((guint32 *)var) = strtol(str, NULL, 16);
+			break;
+		default:
+			*((gint32 *)var) = 0;
+			break;
+	}
+}
+
+gboolean property_set_from_str(Object *o, const gchar *typestr,
+	const gchar *varname, const gchar *value)
+{
+	PropertyType pt;
+	gint32 ival;
+	guint32 cval;
+	gdouble dval;
+
+	pt = property_str_to_type(typestr);
+	switch(pt)
+	{
+		case PROPERTY_INTEGER:
+			property_str_to_var(pt, value, &ival);
+			property_set_integer(o, varname, ival);
+			break;
+		case PROPERTY_DOUBLE:
+			property_str_to_var(pt, value, &dval);
+			property_set_double(o, varname, dval);
+			break;
+		case PROPERTY_COLOR:
+			property_str_to_var(pt, value, &cval);
+			property_set_color(o, varname, cval);
+			break;
+		default:
+			break;
+	}
+
+	return TRUE;
 }
 
 GtkWidget *property_default_properties_handler(Object *o)
