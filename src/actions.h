@@ -6,6 +6,7 @@
 void actions_New(void);
 void actions_Open(void);
 void actions_Save(void);
+void actions_Export(void);
 
 /* GtkActionEntry:
  * name, stock id, label, accelerator, tooltip, callback */
@@ -25,6 +26,10 @@ static GtkActionEntry action_entries[] =
 		"_Save", "<control>S",
 		"Save board layout",
 		G_CALLBACK(actions_Save) },
+	{ "ExportAction", GTK_STOCK_SAVE,
+		"_Export", NULL,
+		"export layout to SVG",
+		G_CALLBACK(actions_Export) },
 	{ "QuitAction", GTK_STOCK_QUIT,
 		"_Quit", "<control>Q",
 		"Quit",

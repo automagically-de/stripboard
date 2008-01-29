@@ -5,6 +5,8 @@
 
 #include <cairo/cairo.h>
 #include <cairo/cairo-svg.h>
+#include <librsvg/rsvg.h>
+#include <librsvg/rsvg-cairo.h>
 
 static Layer *layers = NULL;
 
@@ -189,6 +191,37 @@ RsvgHandle *layers_render_custom(gpointer o, LayerID id)
 	g_free(stream);
 
 	return svg;
+}
+
+gboolean layers_export_svg(const gchar *filename)
+{
+	cairo_surface_t *surface;
+	cairo_t *cairo;
+	gint32 i;
+
+	surface = cairo_svg_surface_create(filename,
+		HOLES_TO_POINT(g_holes_x + 4),
+		HOLES_TO_POINT(g_holes_y + 4));
+	if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+	{
+		g_warning("Export SVG: surface status: %d",
+			cairo_surface_status(surface));
+		cairo_surface_destroy(surface);
+		return FALSE;
+	}
+
+	cairo = cairo_create(surface);
+	for(i = 0; i < NUM_LAYERS; i ++)
+	{
+		if(layers[i].svg)
+		{
+			rsvg_handle_render_cairo(layers[i].svg, cairo);
+		}
+	}
+	cairo_destroy(cairo);
+	cairo_surface_destroy(surface);
+
+	return TRUE;
 }
 
 static cairo_status_t stream_write_cb(void *closure,

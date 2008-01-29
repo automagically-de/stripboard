@@ -30,5 +30,6 @@ RsvgHandle *layers_render_custom(gpointer o, LayerID id);
 gboolean layers_update(GSList *objects);
 Layer *layers_get(guint32 id);
 gboolean layers_set_opacity(LayerID id, gdouble opacity);
+gboolean layers_export_svg(const gchar *filename);
 
 #endif /* _LAYERS_H */

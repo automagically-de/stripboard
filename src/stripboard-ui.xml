@@ -4,6 +4,7 @@
 			<menuitem action="NewAction" />
 			<menuitem action="LoadAction" />
 			<menuitem action="SaveAction" />
+			<menuitem action="ExportAction" />
 			<separator />
 			<menuitem action="QuitAction" />
 		</menu>
@@ -12,6 +13,7 @@
 		<toolitem action="NewAction" />
 		<toolitem action="LoadAction" />
 		<toolitem action="SaveAction" />
+		<toolitem action="ExportAction" />
 		<separator />
 		<toolitem action="QuitAction" />
 	</toolbar>
