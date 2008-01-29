@@ -72,19 +72,19 @@ gboolean tools_drag_n_drop(gint32 x1, gint32 y1, gint32 x2, gint32 y2)
 	switch(g_selected_tool)
 	{
 		case TOOL_ADD_WIRE:
-			o = object_wire_new(ax, ay, bx, by, 0x20FF40FF);
+			o = object_wire_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_RESISTOR:
-			o = object_resistor_new(ax, ay, bx, by, 220);
+			o = object_resistor_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_ELCAP:
-			o = object_elcap_new(ax, ay, bx, by, 0x101080FF, 8, 5);
+			o = object_elcap_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_LED:
-			o = object_led_new(ax, ay, bx, by, 0);
+			o = object_led_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_ICSOCKET:
-			o = object_icsocket_new(ax, ay, bx, by);
+			o = object_icsocket_new_default(ax, ay, bx, by);
 			break;
 		default:
 			break;
@@ -120,23 +120,23 @@ gboolean tools_handle_motion(gint32 x1, gint32 y1, gint32 x2, gint32 y2)
 			break;
 		case TOOL_ADD_WIRE:
 			if(onboard)
-				o = object_wire_new(ax, ay, bx, by, 0);
+				o = object_wire_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_RESISTOR:
 			if(onboard)
-				o = object_resistor_new(ax, ay, bx, by, 220);
+				o = object_resistor_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_ELCAP:
 			if(onboard)
-				o = object_elcap_new(ax, ay, bx, by, 0x101080FF, 8, 5);
+				o = object_elcap_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_LED:
 			if(onboard)
-				o = object_led_new(ax, ay, bx, by, 0);
+				o = object_led_new_default(ax, ay, bx, by);
 			break;
 		case TOOL_ADD_ICSOCKET:
 			if(onboard)
-				o = object_icsocket_new(ax, ay, bx, by);
+				o = object_icsocket_new_default(ax, ay, bx, by);
 			break;
 		default:
 			break;

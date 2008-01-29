@@ -77,7 +77,18 @@ static void parse_start_elem(GMarkupParseContext *context, const gchar *elem,
 	{
 		if(strcmp(attribute_values[0], "board") != 0)
 		{
-			o = object_wire_new(0, 0, 1, 1, 0x0);
+			if(strcmp(attribute_values[0], "wire") == 0)
+				o = object_wire_new_default(0, 0, 1, 1);
+			else if(strcmp(attribute_values[0], "elcap") == 0)
+				o = object_elcap_new_default(0, 0, 1, 1);
+			else if(strcmp(attribute_values[0], "LED") == 0)
+				o = object_led_new_default(0, 0, 1, 1);
+			else if(strcmp(attribute_values[0], "IC socket") == 0)
+				o = object_icsocket_new_default(0, 0, 4, 4);
+			else if(strcmp(attribute_values[0], "resistor") == 0)
+				o = object_resistor_new_default(0, 0, 1, 1);
+			else
+				o = NULL;
 		}
 		else
 			o = (Object *)g_slist_nth_data(objects, 0);
