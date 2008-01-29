@@ -1,6 +1,6 @@
 AC_INIT(configure.in)
 
-VERSION=0.0.5
+VERSION=0.0.6
 PACKAGE=stripboard
 
 AM_CONFIG_HEADER(config.h)
